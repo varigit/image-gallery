@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+QString dirLocation;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -8,12 +10,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    image = 0;
+
+    currentIndex = 0;
 
     QStringList filters;
     filters << "*.jpeg" << "*.jpg";
 
-    imagesDir = new QDir ( "/usr/share/camera-images/");
+    imagesDir = new QDir (dirLocation);
 
     imagesDir->setFilter(QDir::Files);
     imagesDir->setNameFilters( filters);
@@ -21,20 +24,17 @@ MainWindow::MainWindow(QWidget *parent) :
     imagesList = imagesDir->entryList();
 
 
-     ui->prevImage->hide();
+     ui->prevImage->setEnabled(false);
     if(imagesList.count() == 0 || imagesList.count() == 1) {
 
-        ui->nextImage->hide();
+        ui->nextImage->setEnabled(false);
 
         if(imagesList.count() == 0) {
-            ui->clearImages->hide();
+            ui->label->clear();
+            ui->label->setText("No images found");
+            ui->clearImages->setEnabled(false);
         }
     }
-
-    if(imagesList.count() > 0)
-        displayImage(0);
-
-
 }
 
 MainWindow::~MainWindow()
@@ -47,37 +47,67 @@ void MainWindow::on_prevImage_clicked()
 {
     currentIndex--;
     if(currentIndex <= 0)
-       ui->prevImage->hide();
+       ui->prevImage->setEnabled(false);
 
     if(currentIndex < imagesList.count())
-       ui->nextImage->show();
+       ui->nextImage->setEnabled(true);
 
     displayImage(currentIndex);
 }
 
 void MainWindow::on_clearImages_clicked()
 {
-     ui->nextImage->hide();
-     ui->prevImage->hide();
+
+     QMessageBox::StandardButton reply;
+     reply = QMessageBox::question(this,"Delete Confirmation","Delete image?",QMessageBox::Yes|QMessageBox::No);
+
+     if(reply == QMessageBox::No)
+         return;
+
+     ui->nextImage->setEnabled(false);
+     ui->prevImage->setEnabled(false);
 
      QStringList clearList = imagesDir->entryList();
 
-     for(int x = 0; x < clearList.size() ; x++ ) {
-         imagesDir->remove(clearList[x]);
-     }
 
-     ui->clearImages->hide();
-    ui->label->hide();
+    imagesDir->remove(clearList[currentIndex]);
+
+    imagesDir->refresh();
+
+    imagesList = imagesDir->entryList();
+
+    currentIndex--;
+
+    if(currentIndex < 0)
+        currentIndex = 0;
+
+    ui->nextImage->setEnabled(false);
+    ui->prevImage->setEnabled(false);
+
+    if(imagesList.count() > 1 && imagesList.count() -1 > currentIndex)
+        ui->nextImage->setEnabled(true);
+
+    if(currentIndex > 0)
+        ui->prevImage->setEnabled(true);
+
+    if(imagesList.count() >= 1)
+        displayImage(currentIndex);
+    else {
+        ui->clearImages->setEnabled(false);
+        ui->label->clear();
+        ui->label->setText("No images found");
+    }
+
 
 }
 
 void MainWindow::on_nextImage_clicked()
 {
     currentIndex++;
-    if(currentIndex >= 3)
-       ui->nextImage->hide();
+    if(currentIndex >= imagesList.size()-1)
+       ui->nextImage->setEnabled(false);
 
-    ui->prevImage->show();
+    ui->prevImage->setEnabled(true);
 
     displayImage(currentIndex);
 
@@ -85,16 +115,25 @@ void MainWindow::on_nextImage_clicked()
 
 void MainWindow::displayImage(int index) {
 
+    int width = ui->label->width();
+    int height = ui->label->height();
+    QPixmap image;
+    image.load(dirLocation+imagesList[index]);
+    image = image.scaled(width,height,Qt::KeepAspectRatio);
+    ui->label->setPixmap(image);
 
-    if(image) {
-        delete image;
-    }
-
-    image = new QPixmap("/usr/share/camera-images/"+imagesList[index]);
-
-    ui->label->setPixmap(*image);
-
-    QSize pixSize = image->size();
-    pixSize.scale(size(), Qt::KeepAspectRatio);
-    ui->label->setFixedSize(pixSize);
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    this->close();
+}
+void MainWindow::showEvent(QShowEvent *ev)
+{
+    QMainWindow::showEvent(ev);
+
+    if(imagesList.count() > 0)
+        displayImage(0);
+}
+
+

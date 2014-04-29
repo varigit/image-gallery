@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QDir>
 #include <QDebug>
+#include <QMessageBox>
 
 namespace Ui {
 class MainWindow;
@@ -12,11 +13,14 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    
+
 public:
     explicit MainWindow(QWidget *parent = 0);
+
     ~MainWindow();
-    
+
+protected:
+    void showEvent(QShowEvent *);
 private slots:
 
     void on_prevImage_clicked();
@@ -25,13 +29,16 @@ private slots:
 
     void on_nextImage_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     void displayImage(int count);
     int currentIndex;
-    QPixmap* image;
     QStringList imagesList;
     QDir* imagesDir;
 };
+
+
 
 #endif // MAINWINDOW_H
