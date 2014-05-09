@@ -36,7 +36,7 @@ install_common:
 	@install -d ${DESTDIR}/usr/bin
 	@install -d ${DESTDIR}${MATRIX_APP_DIR}/qt-image-gallery
 	@install image-gallery ${DESTDIR}/usr/bin/image-gallery
-	@install matrix/* ${DESTDIR}/${MATRIX_APP_DIR}/qt-image-gallery
+	@install matrix-files/* ${DESTDIR}/${MATRIX_APP_DIR}/qt-image-gallery
 
 install: release install_common
 	@echo "image-gallery release version installed."
