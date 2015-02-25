@@ -1,4 +1,11 @@
-#include <QtGui/QApplication>
+#include <qglobal.h>
+
+#if QT_VERSION < 0x050000
+	#include <QtGui/QApplication>
+#else
+	#include <QApplication>
+#endif
+
 #include "mainwindow.h"
 #include <iostream>
 
