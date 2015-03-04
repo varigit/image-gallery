@@ -9,11 +9,11 @@ all: release
 .PHONY: qmake
 qmake : image-gallery.pro
 	@. ${ENV_SETUP}; \
-	qmake2 CONFIG+=release image-gallery.pro
+	qmake CONFIG+=release image-gallery.pro
 
 qmake_debug : image-gallery.pro
 	@. ${ENV_SETUP}; \
-	qmake2 CONFIG+=debug image-gallery.pro
+	qmake CONFIG+=debug image-gallery.pro
 
 debug : qmake_debug
 	@. ${ENV_SETUP}; \
